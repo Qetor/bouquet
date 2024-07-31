@@ -13,15 +13,28 @@ class HorizontalPdfReaderState(
     resource: ResourceType,
     isZoomEnable: Boolean = false,
     isAccessibleEnable: Boolean = false,
+    initialPage: Int = 0,
 ) : PdfReaderState(resource, isZoomEnable, isAccessibleEnable) {
 
-    internal var pagerState: PagerState = PagerState()
+    internal var pagerState: PagerState = PagerState(currentPage = initialPage)
 
     override val currentPage: Int
         get() = pagerState.currentPage
 
     override val isScrolling: Boolean
         get() = pagerState.isScrollInProgress
+
+    suspend fun nextPage() {
+        if (pagerState.pageCount <= currentPage + 1) return
+
+        pagerState.scrollToPage(currentPage + 1)
+    }
+
+    suspend fun previousPage() {
+        if (currentPage <= 0) return
+
+        pagerState.scrollToPage(currentPage - 1)
+    }
 
     companion object {
         val Saver: Saver<HorizontalPdfReaderState, *> = listSaver(
